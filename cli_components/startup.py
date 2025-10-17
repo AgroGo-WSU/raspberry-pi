@@ -12,7 +12,7 @@ def display_startup(logged_in):
     """Displays the startup menu and registers any new sensors."""
     if not logged_in:
         print("User not logged in, sign in by scanning the QR code below")
-        return
+        return "startup"
 
     print("User logged in, initializing sensor readings")
 
@@ -22,6 +22,9 @@ def display_startup(logged_in):
         dummy.read_all(), 
         PERSIST_PATH
     )
+
+    # Direct the user the dashboard screen
+    return "dashboard"
 
 # Nick, Madeline, you may need to edit the 2 methods below. They work
 # with my specific formatting of the dummy data
@@ -43,16 +46,16 @@ def save_new_sensors_to_storage(zone, user_id, sensor_list, file_path):
             response = send_sensor_to_d1(user_id, sensor_type, zone)
 
             # Separate the JSON from response string
-            json_start = response.index("{")
-            resp_json = json.loads(response[json_start:])
+            if isinstance(response, str):
+                response = json.loads(response)
             
             # Throw an error if the response failed
-            if not resp_json.get("success"):
+            if not response.get("success"):
                 raise Exception(f"Server responded with status {response}")
 
             # Save the record to the storage in the format:
             # <name>, uuid: <sensor uuid>
-            sensor_uuid = resp_json["data"]["sensorId"]
+            sensor_uuid = response["data"]["sensorId"]
             with open(file_path, "a") as f:
                 f.write(f"{sensor_name}, uuid: {sensor_uuid}\n")
             print(f"Sensor '{sensor_name}' registered successfully.")

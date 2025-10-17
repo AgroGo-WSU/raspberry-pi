@@ -3,8 +3,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-def send_temperature_reading_to_d1(reading, user_id, sensor_id):
-    """Makes a new temperature entry in the pings table in D1"""
+def send_sensor_reading_to_d1(reading, user_id, sensor_id):
+    """Makes a new entry in the pings table in D1"""
 
     base_url = "https://backend.agrogodev.workers.dev/api/data/pings"
     headers = make_headers()
@@ -13,25 +13,20 @@ def send_temperature_reading_to_d1(reading, user_id, sensor_id):
         "userId": user_id,
         # TODO add physical reading once it's been added into the database
         "sensorId": sensor_id,
-        "time": datetime.now()
+        "confirmed": "yes"
     }
 
-    post_record(base_url, headers, json.dumps(payload))
-
-def send_humidity_reading_to_d1(reading, user_id, sensor_id):
-    """Makes a new humidity entry in the pings table in D1"""
-
-    base_url = "https://backend.agrogodev.workers.dev/api/data/pings"
-    headers = make_headers()
-
-    payload = {
-        "userId": user_id,
-        # TODO add physical reading once it's been added into the database
-        "sensorId": sensor_id,
-        "time": datetime.now()
-    }
-
-    post_record(base_url, headers, json.dumps(payload))
+    response = post_record(base_url, headers, json.dumps(payload))
+    
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Failed to send data ({response.status_code}): {response.text}"
+        )
+    
+    try:
+        return response.json()
+    except ValueError:
+        return {"raw_response": response.text, "status_code": response.status_code}
 
 def send_sensor_to_d1(user_id, type, zone):
     """Makes a new entry in the sensor table in D1"""
@@ -47,8 +42,16 @@ def send_sensor_to_d1(user_id, type, zone):
     
     # Send data to backend
     response = post_record(base_url, headers, json.dumps(payload))
-    print(response)
-    return response
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Failed to send data ({response.status_code}): {response.text}"
+        )
+    
+    try:
+        return response.json()
+    except ValueError:
+        return {"raw_response": response.text, "status_code": response.status_code}
+
 
 # File that holds the bearer token. Add the bearer token and only the bearer token
 # in the file '../persistent_data_store/beared_token.txt'
@@ -76,10 +79,6 @@ def post_record(base_url, headers, data):
     """Try/catch block that includes error checking for a D1 POST request"""
     try:
         response = requests.post(base_url, headers=headers, data=data)
-
-        if response.status_code == 200:
-            return "Data send successfully: " + json.dumps(response.json())
-        else:
-            return f"Failed to send data ({response.status_code}): {response.text}"
+        return response
     except requests.exceptions.RequestException as e:
-        return "Error sending data: " + e
+        raise RuntimeError(f"Error sending data: {e}")

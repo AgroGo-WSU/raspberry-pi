@@ -11,15 +11,9 @@ def main():
         print("==============================")
 
         if state == "startup":
-            display_startup(True)
+            state = display_startup(True)
         elif state == "dashboard":
             display_dashboard()
-        
-        print("\nPress 'q' to quit or Enter to refresh.")
-        user_input = input("> ").strip().lower()
-        if user_input == "q":
-            print("Exiting program.")
-            break
 
         time.sleep(0.1)  # Small buffer for readability
 
