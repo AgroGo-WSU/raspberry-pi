@@ -1,70 +1,79 @@
-from cloud.worker_client import send_sensor
+import json
+from cloud.worker_client import send_sensor_to_d1
 from sensors import dummy  # TODO: replace with actual data
 from pathlib import Path
-import json
 
-PERSIST_PATH = "./persistent_data_store/sensors.txt"
+#PERSIST_PATH = "./persistent_data_store/sensors.txt"
+PERSIST_PATH = Path(__file__).resolve().parent / "persistent_data_store" / "sensors.txt"
 DEFAULT_USER_ID = "73d2c45f-c17b-4d92-9938-34ccf301b78b"
+DEFAULT_ZONE_ID = "cfecaee9-69e9-4f57-b3c5-0a57831a6731"
 
-def display_startup(logged_in, stdscr, start_line=0):
+def display_startup(logged_in):
     """Displays the startup menu and registers any new sensors."""
     if not logged_in:
-        stdscr.addstr(start_line, 0, "User not logged in, sign in by scanning the QR code below")
+        print("User not logged in, sign in by scanning the QR code below")
         return
 
-    stdscr.addstr(start_line, 0, "User logged in, initializing sensor readings")
-    reading = dummy.read_all()
+    print("User logged in, initializing sensor readings")
 
-    # Loop through readings dynamically
-    for i, (sensor_type, value) in enumerate(reading.items(), start=1):
-        sensor = {"userId": DEFAULT_USER_ID, "type": sensor_type, "zone": f"{sensor_type}_zone"}
-        payload = {k: sensor[k] for k in ("userId", "type", "zone")}
+    save_new_sensors_to_storage(
+        DEFAULT_ZONE_ID, 
+        DEFAULT_USER_ID, 
+        dummy.read_all(), 
+        PERSIST_PATH
+    )
 
-        result = save_sensors([sensor], PERSIST_PATH, payload)
-        line_offset = start_line + i + 1
-        if "0 new sensors saved" not in result:
-            resp = send_sensor(DEFAULT_USER_ID, sensor_type, sensor["zone"])
-            stdscr.addstr(line_offset, 0, f"Registered {sensor_type} sensor: {resp}")
-        else:
-            stdscr.addstr(line_offset, 0, f"{sensor_type.capitalize()} sensor already exists locally")
-        stdscr.refresh()
+# Nick, Madeline, you may need to edit the 2 methods below. They work
+# with my specific formatting of the dummy data
+def save_new_sensors_to_storage(zone, user_id, sensor_list, file_path):
+    """
+    Checks if each sensor in sensor_dict exists in the file.
+    If not, it appends the new sensor name to the file.
+    """
+
+    for sensor in sensor_list:
+        sensor_name = sensor["name"]
+        sensor_type = sensor["type"]
+
+        sensor_exists_in_file = is_sensor_in_file(sensor_name, file_path)
+        if sensor_exists_in_file: continue
+
+        # Save the new sensor log both in D1 and locally
+        try:
+            response = send_sensor_to_d1(user_id, sensor_type, zone)
+
+            # Separate the JSON from response string
+            json_start = response.index("{")
+            resp_json = json.loads(response[json_start:])
+            
+            # Throw an error if the response failed
+            if not resp_json.get("success"):
+                raise Exception(f"Server responded with status {response}")
+
+            # Save the record to the storage in the format:
+            # <name>, uuid: <sensor uuid>
+            sensor_uuid = resp_json["data"]["sensorId"]
+            with open(file_path, "a") as f:
+                f.write(f"{sensor_name}, uuid: {sensor_uuid}\n")
+            print(f"Sensor '{sensor_name}' registered successfully.")
+        except Exception as e:
+            print(f"Failed to register '{sensor_name}': {e}")
 
 
-def save_sensors(sensors, file_path, payload):
-    """Save sensor data locally and avoid duplicates."""
-    file = Path(file_path)
-    file.parent.mkdir(parents=True, exist_ok=True)
-    if not file.exists():
-        file.touch()
+def is_sensor_in_file(sensor, file_path):
+    """
+    Checks whether the given sensor name exists in the file.
+    Returns True if found, False otherwise.
+    """
 
-    existing_sensors = {}
     try:
-        with open(file, "r") as f:
+        with open(file_path, "r") as f:
             for line in f:
-                try:
-                    rec = json.loads(line)
-                    if rec.get("uuid"):
-                        existing_sensors[rec["uuid"]] = rec
-                except json.JSONDecodeError:
-                    continue
+                if line.strip() == sensor: return True
+            return False
+    except FileNotFoundError:
+        # File doesn't exist yet, so the sensor can't be in it
+        return False
     except Exception as e:
-        return f"Error reading file: {e}"
-
-    new_records = []
-    for sensor in sensors:
-        uuid = sensor.get("uuid")
-        if uuid and uuid in existing_sensors:
-            continue
-        new_records.append({**payload, "uuid": uuid})
-
-    if not new_records:
-        return "0 new sensors saved"
-
-    try:
-        with open(file, "a") as f:
-            for rec in new_records:
-                f.write(json.dumps(rec) + "\n")
-    except Exception as e:
-        return f"Error writing to file: {e}"
-
-    return f"{len(new_records)} new sensors saved"
+        print(f"Error reading file {file_path}: {e}")
+        return False

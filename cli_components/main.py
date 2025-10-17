@@ -1,32 +1,27 @@
-import curses
 import time
 from startup import display_startup
 from dashboard import display_dashboard
-import threading
 
-def main(stdscr):
-    curses.curs_set(0) # Hide cursor
-    stdscr.nodelay(True) # Don't block on input
-    stop_event = threading.Event()
-    
-    # TODO Iniatilize threads
-    
+def main():  
     state = "startup"
 
     while True:
-        stdscr.clear()
-        if state == "startup":
-            display_startup(True, stdscr, 0)
-        elif state == "dashboard":
-            display_dashboard(stdscr, 0)
-        stdscr.addstr(5, 0, "Press 'q' to quit.")
-        stdscr.refresh()
+        print("\n==============================")
+        print(f"Current state: {state}")
+        print("==============================")
 
-        # Non-blocking keypress check
-        key = stdscr.getch()
-        if key == ord('q'):
+        if state == "startup":
+            display_startup(True)
+        elif state == "dashboard":
+            display_dashboard()
+        
+        print("\nPress 'q' to quit or Enter to refresh.")
+        user_input = input("> ").strip().lower()
+        if user_input == "q":
+            print("Exiting program.")
             break
 
-        time.sleep(0.1) # Buffer to keep from maxing out the CPU
+        time.sleep(0.1)  # Small buffer for readability
 
-curses.wrapper(main)
+if __name__ == "__main__":
+    main()
