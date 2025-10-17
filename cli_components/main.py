@@ -11,12 +11,12 @@ def main(stdscr):
     
     # TODO Iniatilize threads
     
-    state = "dashboard"
+    state = "startup"
 
     while True:
         stdscr.clear()
         if state == "startup":
-            display_startup(False, stdscr, 0)
+            display_startup(True, stdscr, 0)
         elif state == "dashboard":
             display_dashboard(stdscr, 0)
         stdscr.addstr(5, 0, "Press 'q' to quit.")
