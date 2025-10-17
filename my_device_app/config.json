@@ -1,0 +1,40 @@
+{
+  "deviceId": "b8:27:eb:12:34:56",
+  "samplingInterval": 60,
+  "configRefetchInterval": 300,
+  "uploadUrl": "https://dev.agrogo.com/device/b8:27:eb:12:34:56/data",
+  "pinActionTable": [
+    {
+      "type": "fan",
+      "pin": 17,
+      "time": "08:00",
+      "duration": 300
+    },
+    {
+      "type": "water",
+      "pin": 27,
+      "time": "06:00",
+      "duration": 120
+    },
+    {
+      "type": "water",
+      "pin": 22,
+      "time": "18:00",
+      "duration": 120
+    },
+    {
+      "type": "water",
+      "pin": 23,
+      "time": "21:00",
+      "duration": 120
+    },
+    {
+      "type": "water",
+      "pin": 27,
+      "trigger": "humidity_below",
+      "value": 30,
+      "duration": 60,
+      "cooldown": 600
+    }
+  ]
+}
