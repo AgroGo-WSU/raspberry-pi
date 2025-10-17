@@ -1,4 +1,4 @@
-this is the folder structure of raspberry pi
+hit edit on githib to see this properly formated this is the folder structure of raspberry pi
 /home/pi/my_device_app/
 │
 ├── startup.py            # Boot entry — decides pairing vs main
