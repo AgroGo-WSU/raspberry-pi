@@ -1,0 +1,49 @@
+{
+  "backend": {
+    "config_url_template": "https://dev.agrogo.org/device/{mac}/config",
+    "upload_url_template": "https://dev.agrogo.org/device/{mac}/data"
+  },
+  "configRefetchInterval": 300,
+  "deviceId": "b8:27:eb:12:34:56",
+  "firebaseUid": null,
+  "last_config_fetch": null,
+  "last_seen": {},
+  "paired": false,
+  "pairing_nonce": "GHVQmEzt4dQkwg2GzB3w5A",
+  "pinActionTable": [
+    {
+      "duration": 300,
+      "pin": 17,
+      "time": "08:00",
+      "type": "fan"
+    },
+    {
+      "duration": 120,
+      "pin": 27,
+      "time": "06:00",
+      "type": "water"
+    },
+    {
+      "duration": 120,
+      "pin": 22,
+      "time": "18:00",
+      "type": "water"
+    },
+    {
+      "duration": 120,
+      "pin": 23,
+      "time": "21:00",
+      "type": "water"
+    },
+    {
+      "cooldown": 600,
+      "duration": 60,
+      "pin": 27,
+      "trigger": "humidity_below",
+      "type": "water",
+      "value": 30
+    }
+  ],
+  "samplingInterval": 60,
+  "uploadUrl": "https://dev.agrogo.com/device/b8:27:eb:12:34:56/data"
+}
