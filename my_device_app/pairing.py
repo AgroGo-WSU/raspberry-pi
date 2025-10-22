@@ -16,8 +16,8 @@ import qrcode
 import requests
 from utils import get_mac, load_local_config, save_local_config, log_info
 
-# Backend pairing status endpoint (adjust to your actual endpoint)
-PAIRING_STATUS_URL = ""
+# Backend pairing status endpoint
+PAIRING_STATUS_URL = "https://backend.agrogodev.workers.dev/api/raspi/pairingStatus"
 
 # Poll interval (seconds)
 POLL_INTERVAL = 8
@@ -27,9 +27,9 @@ def generate_nonce():
     return secrets.token_urlsafe(16)
 
 
-def build_pairing_url(mac: str, nonce: str) -> str:
+def build_pairing_url(mac: str) -> str:
     # Pairing web app will accept mac and nonce and present Firebase login UI.
-    return f"https://dev.agrogo.org/pair?mac={mac}&nonce={nonce}"
+    return f"https://agrogo-wsu.github.io/device-pairing?mac={mac}" #&nonce={nonce}"
 
 
 def show_qr_terminal(url: str) -> None:
@@ -41,7 +41,7 @@ def show_qr_terminal(url: str) -> None:
     qr.print_ascii(invert=True)
 
 
-def wait_for_pairing(mac: str, nonce: str):
+def wait_for_pairing(mac: str):
     """
     Polls backend for pairing status. Server should verify nonce and return firebaseUid.
     Response example: { "firebaseUid": "firebase|abc123", "message": "paired" }
@@ -50,7 +50,7 @@ def wait_for_pairing(mac: str, nonce: str):
     url = PAIRING_STATUS_URL
     while True:
         try:
-            resp = requests.get(url, params={"mac": mac, "nonce": nonce}, timeout=10)
+            resp = requests.get(url, params={"mac": mac,}, timeout=10)
             if resp.status_code == 200:
                 j = resp.json()
                 firebase_uid = j.get("firebaseUid") or j.get("firebase_uid")
@@ -74,19 +74,19 @@ def main():
     config = load_local_config()
 
     # Create a nonce and persist to config to allow server-side verification if needed
-    nonce = config.get("pairing_nonce")
+    """once = config.get("pairing_nonce")
     if not nonce:
         nonce = generate_nonce()
         config["pairing_nonce"] = nonce
-        save_local_config(config)
+        save_local_config(config)"""
 
-    pairing_url = build_pairing_url(mac, nonce)
+    pairing_url = build_pairing_url(mac)
     print("[pairing] Scan this QR code with your phone to sign in and pair the device:")
     show_qr_terminal(pairing_url)
     print(f"[pairing] Pairing URL (also visible as text): {pairing_url}")
 
     # Wait until backend reports pairing
-    firebase_uid = wait_for_pairing(mac, nonce)
+    firebase_uid = wait_for_pairing(mac)
 
     # Save pairing info locally
     config["firebaseUid"] = firebase_uid

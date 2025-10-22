@@ -1,0 +1,102 @@
+2025-10-22 20:34:21 - [pairing] Polling pairing status for MAC=d8:3a:dd:9a:55:2a
+2025-10-22 20:34:21 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:34:29 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:34:37 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:34:45 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:34:53 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:01 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:09 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:17 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:25 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:33 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:41 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:49 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:35:57 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:36:05 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:36:13 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:36:21 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 20:36:29 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:03:55 - [pairing] Polling pairing status for MAC=d8:3a:dd:9a:55:2a
+2025-10-22 21:03:55 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:03 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:11 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:19 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:27 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:35 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:43 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:51 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:04:59 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-22 21:25:57 - [main] Starting main runtime
+2025-10-22 21:25:57 - [main] Fetching config from https://dev.agrogo.org/device/d8:3a:dd:9a:55:2a/config
+2025-10-22 21:25:57 - [main] Error fetching config: HTTPSConnectionPool(host='dev.agrogo.org', port=443): Max retries exceeded with url: /device/d8:3a:dd:9a:55:2a/config (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f9e711400>: Failed to resolve 'dev.agrogo.org' ([Errno -2] Name or service not known)"))
+2025-10-22 21:25:57 - [sensor] DHT11 reading: Temp=21.4°C  Humidity=42.0%
+2025-10-22 21:25:57 - [main] Sensor readings: {'temperature': 21.4, 'humidity': 42.0}
+2025-10-22 21:25:57 - [upload] Failed to upload telemetry: HTTPSConnectionPool(host='dev.agrogo.org', port=443): Max retries exceeded with url: /device/d8:3a:dd:9a:55:2a/data (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f9e6aafd0>: Failed to resolve 'dev.agrogo.org' ([Errno -2] Name or service not known)"))
+2025-10-22 21:27:58 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-22 21:27:58 - [main] Shutdown complete.
+2025-10-22 21:44:36 - [pairing] Polling pairing status for MAC=d8:3a:dd:9a:55:2a
+2025-10-22 21:44:36 - [pairing] pairing check status: 404
+2025-10-22 21:44:45 - [pairing] pairing check status: 404
+2025-10-22 21:44:53 - [pairing] pairing check status: 404
+2025-10-22 21:45:01 - [pairing] pairing check status: 404
+2025-10-22 21:45:10 - [pairing] pairing check status: 404
+2025-10-22 21:45:32 - [main] Starting main runtime
+2025-10-22 21:45:32 - [main] Fetching config from https://backend.agrogodev.workers.dev/api/raspi/d8:3a:dd:9a:55:2a
+2025-10-22 21:45:33 - [main] Error fetching config: dictionary update sequence element #0 has length 4; 2 is required
+2025-10-22 21:45:33 - [sensor] DHT11 reading: Temp=21.2°C  Humidity=43.0%
+2025-10-22 21:45:33 - [main] Sensor readings: {'temperature': 21.2, 'humidity': 43.0}
+2025-10-22 21:45:33 - [upload] Failed to upload telemetry: 401 Client Error: Unauthorized for url: https://backend.agrogodev.workers.dev/api/raspi/sensorReadings
+2025-10-22 21:52:50 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-22 21:52:50 - [main] Shutdown complete.
+2025-10-22 21:56:36 - [main] Starting main runtime
+2025-10-22 21:56:36 - [main] Fetching config from https://backend.agrogodev.workers.dev/api/raspi/d8:3a:dd:9a:55:2a
+2025-10-22 21:56:37 - [main] Error fetching config: dictionary update sequence element #0 has length 4; 2 is required
+2025-10-22 21:56:37 - [sensor] DHT11 reading: Temp=21.2°C  Humidity=48.0%
+2025-10-22 21:56:37 - [main] Sensor readings: {'temperature': 21.2, 'humidity': 48.0}
+2025-10-22 21:56:38 - [upload] Failed to upload telemetry: 401 Client Error: Unauthorized for url: https://backend.agrogodev.workers.dev/api/raspi/sensorReadings
+2025-10-22 21:58:12 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-22 21:58:12 - [main] Shutdown complete.
+2025-10-22 22:02:34 - [main] Starting main runtime
+2025-10-22 22:02:34 - [main] Fetching config from https://backend.agrogodev.workers.dev/api/raspi/d8:3a:dd:9a:55:2a
+2025-10-22 22:02:34 - [main] Error fetching config: dictionary update sequence element #0 has length 4; 2 is required
+2025-10-22 22:02:35 - [sensor] DHT11 reading: Temp=21.4°C  Humidity=44.0%
+2025-10-22 22:02:35 - [main] Sensor readings: {'temperature': 21.4, 'humidity': 44.0}
+2025-10-22 22:02:35 - [upload] Failed to upload telemetry: 400 Client Error: Bad Request for url: https://backend.agrogodev.workers.dev/api/raspi/sensorReadings
+2025-10-22 22:04:01 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-22 22:04:01 - [main] Shutdown complete.
+2025-10-22 22:18:37 - [main] Starting main runtime
+2025-10-22 22:18:37 - [main] Fetching config from https://backend.agrogodev.workers.dev/api/raspi/d8:3a:dd:9a:55:2a
+2025-10-22 22:18:38 - [main] Error fetching config: dictionary update sequence element #0 has length 4; 2 is required
+2025-10-22 22:18:38 - [sensor] DHT11 reading: Temp=20.7°C  Humidity=45.0%
+2025-10-22 22:18:38 - [main] Sensor readings: {'temperature': 20.7, 'humidity': 45.0}
+2025-10-22 22:18:39 - [upload] Failed to upload telemetry: 400 Client Error: Bad Request for url: https://backend.agrogodev.workers.dev/api/raspi/sensorReadings
+2025-10-22 22:26:53 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-22 22:26:53 - [main] Shutdown complete.
+2025-10-22 22:49:05 - [pairing] Polling pairing status for MAC=d8:3a:dd:9a:55:2a
+2025-10-22 22:49:05 - [pairing] pairing check status: 404
+2025-10-22 22:49:14 - [pairing] pairing check status: 404
+2025-10-22 22:49:22 - [pairing] pairing check status: 404
+2025-10-22 22:49:31 - [pairing] pairing check status: 404
+2025-10-22 22:49:39 - [pairing] pairing check status: 404
+2025-10-22 22:49:47 - [pairing] pairing check status: 404
+2025-10-22 22:49:56 - [pairing] pairing check status: 404
+2025-10-22 22:50:04 - [pairing] pairing check status: 404
+2025-10-22 22:50:12 - [pairing] pairing check status: 404
+2025-10-22 22:50:21 - [pairing] pairing check status: 404
+2025-10-22 22:50:29 - [pairing] pairing check status: 404
+2025-10-22 22:50:38 - [pairing] pairing check status: 404
+2025-10-22 22:50:46 - [pairing] pairing check status: 404
+2025-10-22 22:50:55 - [pairing] pairing check status: 404
+2025-10-22 22:51:03 - [pairing] pairing check status: 404
+2025-10-22 22:51:12 - [pairing] pairing check status: 404
+2025-10-22 22:51:20 - [pairing] pairing check status: 404
+2025-10-22 22:51:28 - [pairing] pairing check status: 404
+2025-10-22 22:51:37 - [pairing] pairing check status: 404
+2025-10-22 22:51:57 - [main] Starting main runtime
+2025-10-22 22:51:57 - [main] Fetching config from https://backend.agrogodev.workers.dev/api/raspi/d8:3a:dd:9a:55:2a
+2025-10-22 22:51:58 - [main] Error fetching config: 404 Client Error: Not Found for url: https://backend.agrogodev.workers.dev/api/raspi/d8:3a:dd:9a:55:2a
+2025-10-22 22:51:58 - [sensor] DHT11 reading: Temp=22.4°C  Humidity=48.0%
+2025-10-22 22:51:58 - [main] Sensor readings: {'temperature': 22.4, 'humidity': 48.0}
+2025-10-22 22:51:58 - [upload] Failed to upload telemetry: 400 Client Error: Bad Request for url: https://backend.agrogodev.workers.dev/api/raspi/sensorReadings
+2025-10-22 22:52:56 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-22 22:52:56 - [main] Shutdown complete.

@@ -14,8 +14,8 @@ import tempfile
 import time
 from typing import Dict, Any
 
-CONFIG_PATH = "/home/pi/my_device_app/config.json"
-LOG_PATH = "/home/pi/my_device_app/logs/app.log"
+CONFIG_PATH = "/home/agrogodev/my_device_app/config.json"
+LOG_PATH = "/home/agrogodev/my_device_app/logs/app.log"
 
 
 def get_mac() -> str:
@@ -27,6 +27,15 @@ def get_mac() -> str:
     mac_str = ":".join([f"{(mac_int >> ele) & 0xff:02x}" for ele in range(0, 8 * 6, 8)][::-1])
     return mac_str.lower()
 
+def is_paired(config: dict) -> bool:
+    """
+    Returns True if the device is paired with Firebase (i.e., has a valid UUID).
+    """
+    try:
+        firebase_uuid = config.get("firebaseUUID") or config.get("uuid")
+        return bool(firebase_uuid)
+    except Exception:
+        return False
 
 def load_local_config() -> Dict[str, Any]:
     """
@@ -40,8 +49,8 @@ def load_local_config() -> Dict[str, Any]:
         "pairing_nonce": None,
         "last_config_fetch": None,
         "backend": {
-            "config_url_template": "https://dev.agrogo.org/device/{mac}/config",
-            "upload_url_template": "https://dev.agrogo.org/device/{mac}/data"
+            "config_url_template": "https://backend.agrogodev.workers.dev/api/raspi/{mac}",
+            "upload_url_template": "https://backend.agrogodev.workers.dev/api/raspi/sensorReadings"
         },
         "pinActionTable": [],
         "last_seen": {}

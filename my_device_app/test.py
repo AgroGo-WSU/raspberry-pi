@@ -11,7 +11,7 @@ PIN_MAP = {
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-for p in CONTROL_PINS:
+for p in PIN_MAP.values():
     GPIO.setup(p, GPIO.OUT, initial=GPIO.LOW)
 
 print("GPIO pin Test Started — Press Ctrl+C to stop\n")
