@@ -36,10 +36,8 @@ import datetime
 import traceback
 
 import RPi.GPIO as GPIO
-
-# Changed the import of Adafruit. On my Pi, I need the newer version - Drew
-#import Adafruit_DHT
-import adafruit_dht as Adafruit_DHT
+import adafruit_dht
+import board
 
 from utils import (
     get_mac,
@@ -51,8 +49,8 @@ from utils import (
 )
 
 # ---------- Hardware pin definitions (BCM numbering) ----------
-DHT_PIN = 15
-DHT_SENSOR = Adafruit_DHT.DHT11
+DHT_PIN = board.D15  # DHT11 data line on GPIO 15
+dht_device = adafruit_dht.DHT11(DHT_PIN, use_pulseio=False)
 
 PIN_MAP = {
     "fan": 17,
@@ -60,6 +58,7 @@ PIN_MAP = {
     "water_2": 22,
     "water_3": 23
 }
+
 # For quick lookup: set of all controlled pins
 CONTROL_PINS = list(PIN_MAP.values())
 
@@ -174,21 +173,37 @@ def should_run_sensor_trigger(entry: dict, readings: dict) -> bool:
     recent_runs[entry_key] = now_ts
     return True
 
-
 def read_dht11() -> dict:
     """
-    Read DHT11 sensor via Adafruit_DHT.read_retry().
-    Returns dict: {"temp": float, "humidity": float} or {} on failure.
+    Read DHT11 sensor via Adafruit Blinka interface.
+    Logs results and errors using log_info().
+    Returns dict: {"temperature": float, "humidity": float} or {} on failure.
     """
     try:
-        humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
-        if humidity is None or temperature is None:
-            log_info("[sensor] DHT11 read returned None (sensor might be disconnected).")
+        temperature_c = dht_device.temperature
+        humidity = dht_device.humidity
+
+        if temperature_c is None or humidity is None:
+            log_info("[sensor] DHT11 returned None values (sensor may be initializing).")
             return {}
-        # DHT11 returns integer-ish values; convert to float for precision later
-        return {"temp": float(temperature), "humidity": float(humidity)}
+
+        log_info(f"[sensor] DHT11 reading: Temp={temperature_c:.1f}°C  Humidity={humidity:.1f}%")
+        return {"temperature": float(temperature_c), "humidity": float(humidity)}
+
+    except RuntimeError as e:
+        # DHT11 throws RuntimeError often due to timing — just log and retry
+        log_info(f"[sensor] RuntimeError during read: {e}")
+        time.sleep(2)  # small pause before next loop
+        return {}
+
     except Exception as e:
-        log_info(f"[sensor] Exception reading DHT11: {e}")
+        # Catch all other issues
+        log_info(f"[sensor] Unexpected exception: {e}")
+        try:
+            dht_device.exit()
+        except Exception:
+            pass
+        time.sleep(2)
         return {}
 
 
@@ -204,10 +219,10 @@ def main():
     # Backend endpoints from config (templates)
     backend_cfg = cfg.get("backend", {})
     config_url_template = backend_cfg.get(
-        "config_url_template", "https://dev.agrogo.com/device/{mac}/config"
+        "config_url_template", "https://backend.agrogodev.workers.dev/api/raspi/{mac}"
     )
     upload_url_template = backend_cfg.get(
-        "upload_url_template", "https://dev.agrogo.com/device/{mac}/data"
+        "upload_url_template", "https://backend.agrogodev.workers.dev/api/raspi/sensorReadings"
     )
     ## honestly I dont know if this will work but if we can its no biggie we can do
     ## something more manual
