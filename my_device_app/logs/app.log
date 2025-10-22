@@ -1,0 +1,55 @@
+2025-10-18 14:15:40 - [main] Starting main runtime
+2025-10-18 14:15:40 - [main] Fetching config from https://dev.agrogo.org/device/b8:27:eb:12:34:56/config
+2025-10-18 14:15:41 - [main] Error fetching config: HTTPSConnectionPool(host='dev.agrogo.org', port=443): Max retries exceeded with url: /device/b8:27:eb:12:34:56/config (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f84dcfd50>: Failed to resolve 'dev.agrogo.org' ([Errno -2] Name or service not known)"))
+2025-10-18 14:15:41 - [sensor] Exception reading DHT11: module 'adafruit_dht' has no attribute 'read_retry'
+2025-10-18 14:15:41 - [main] No sensor readings this loop.
+2025-10-18 14:15:58 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-18 14:15:58 - [main] Shutdown complete.
+2025-10-18 14:16:49 - [pairing] Polling pairing status for MAC=d8:3a:dd:ee:bb:ec
+2025-10-18 14:16:49 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:16:57 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:05 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:13 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:21 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:29 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:37 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:45 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:17:53 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:01 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:09 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:17 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:25 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:33 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:41 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:49 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:18:57 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:19:05 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:19:13 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:19:21 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:19:29 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-18 14:26:43 - [main] Starting main runtime
+2025-10-18 14:26:43 - [main] Fetching config from https://dev.agrogo.org/device/b8:27:eb:12:34:56/config
+2025-10-18 14:26:43 - [main] Error fetching config: HTTPSConnectionPool(host='dev.agrogo.org', port=443): Max retries exceeded with url: /device/b8:27:eb:12:34:56/config (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f979c2810>: Failed to resolve 'dev.agrogo.org' ([Errno -2] Name or service not known)"))
+2025-10-18 14:26:44 - [sensor] Exception reading DHT11: module 'adafruit_dht' has no attribute 'read_retry'
+2025-10-18 14:26:44 - [main] No sensor readings this loop.
+2025-10-18 14:26:49 - [main] KeyboardInterrupt received, cleaning up GPIO and exiting.
+2025-10-18 14:26:49 - [main] Shutdown complete.
+2025-10-21 22:01:15 - [pairing] Polling pairing status for MAC=d8:3a:dd:ee:bb:ec
+2025-10-21 22:01:15 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:01:23 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:01:31 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:01:39 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:01:47 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:01:55 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:03 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:11 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:19 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:27 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:35 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:43 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:51 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:02:59 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:03:07 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:03:15 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:03:23 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?
+2025-10-21 22:03:31 - [pairing] Error contacting server: Invalid URL '': No scheme supplied. Perhaps you meant https://?

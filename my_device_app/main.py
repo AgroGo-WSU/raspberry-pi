@@ -36,7 +36,10 @@ import datetime
 import traceback
 
 import RPi.GPIO as GPIO
-import Adafruit_DHT
+
+# Changed the import of Adafruit. On my Pi, I need the newer version - Drew
+#import Adafruit_DHT
+import adafruit_dht as Adafruit_DHT
 
 from utils import (
     get_mac,
@@ -48,7 +51,7 @@ from utils import (
 )
 
 # ---------- Hardware pin definitions (BCM numbering) ----------
-DHT_PIN = 15  # DHT11 data line on GPIO 15 (as requested)
+DHT_PIN = 15
 DHT_SENSOR = Adafruit_DHT.DHT11
 
 PIN_MAP = {

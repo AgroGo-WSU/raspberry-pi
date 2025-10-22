@@ -29,7 +29,7 @@ def generate_nonce():
 
 def build_pairing_url(mac: str, nonce: str) -> str:
     # Pairing web app will accept mac and nonce and present Firebase login UI.
-    return f"https://dev.agrogo.org/pair?mac={mac}&nonce={nonce}"
+    return f"https://agrogo-wsu.github.io/device-pairing/?mac={mac}"
 
 
 def show_qr_terminal(url: str) -> None:

@@ -14,9 +14,10 @@ import tempfile
 import time
 from typing import Dict, Any
 
-CONFIG_PATH = "/home/pi/my_device_app/config.json"
-LOG_PATH = "/home/pi/my_device_app/logs/app.log"
-
+# Dynamically creating path routing
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
+LOG_PATH = os.path.join(BASE_DIR, "logs", "app.log")
 
 def get_mac() -> str:
     """
