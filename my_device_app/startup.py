@@ -7,14 +7,12 @@ startup.py
   so logs appear in stdout/stderr (captured by systemd -> logs/app.log).
 """
 
-import os
 import subprocess
 import sys
 from utils import load_local_config, is_paired, get_mac
 
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
-PAIRING_SCRIPT = os.path.join(APP_DIR, "pairing.py")
-MAIN_SCRIPT = os.path.join(APP_DIR, "main.py")
+PAIRING_SCRIPT = "./pairing.py"
+MAIN_SCRIPT = "./main.py"
 
 
 def main():
