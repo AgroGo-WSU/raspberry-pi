@@ -12,11 +12,14 @@ import json
 import uuid
 import tempfile
 import time
+import pytz
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 CONFIG_PATH = "/home/agrogodev/my_device_app/config.json"
 LOG_PATH = "/home/agrogodev/my_device_app/logs/app.log"
 
+LOCAL_TZ = pytz.timezone("America/Detroit")
 
 def get_mac() -> str:
     """
@@ -45,12 +48,11 @@ def load_local_config() -> Dict[str, Any]:
     default = {
         "deviceId": None,
         "paired": False,
-        "firebaseUid": None,
-        "pairing_nonce": None,
+        "firebaseUUID": None,
         "last_config_fetch": None,
         "backend": {
-            "config_url_template": "https://backend.agrogodev.workers.dev/api/raspi/{mac}",
-            "upload_url_template": "https://backend.agrogodev.workers.dev/api/raspi/sensorReadings"
+            "config_url_template": "https://backend.agrogodev.workers.dev/raspi/{mac}/pinActionTable",
+            "upload_url_template": "https://backend.agrogodev.workers.dev/raspi/{mac}/sensorReadings",
         },
         "pinActionTable": [],
         "last_seen": {}
@@ -104,7 +106,9 @@ def log_info(msg: str) -> None:
     Simple logger that prints to stdout and appends to LOG_PATH.
     Systemd can capture stdout; we still append to a file for convenience.
     """
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    now_local = datetime.now(timezone.utc).astimezone(LOCAL_TZ)
+    
+    timestamp = now_local.strftime("%Y-%m-%d %H:%M:%S")
     line = f"{timestamp} - {msg}"
     print(line, flush=True)
     try:

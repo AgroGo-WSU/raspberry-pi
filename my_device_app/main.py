@@ -29,7 +29,6 @@ Notes:
   - RPi.GPIO
   - requests
 """
-
 import time
 import threading
 import datetime
@@ -38,6 +37,8 @@ import traceback
 import RPi.GPIO as GPIO
 import adafruit_dht
 import board
+import numpy as np
+import pytz
 
 from utils import (
     get_mac,
@@ -58,37 +59,29 @@ PIN_MAP = {
     "water_2": 22,
     "water_3": 23
 }
-
-# For quick lookup: set of all controlled pins
 CONTROL_PINS = list(PIN_MAP.values())
 
-# -------------- Runtime state --------------
-# Used to ensure we don't retrigger scheduled actions multiple times in the same minute
-recent_runs = {}  # key -> last_run_timestamp (epoch sec)
-
-# Thread-safe lock for GPIO activation to avoid concurrent writes from multiple triggers
+recent_runs = {}
 gpio_lock = threading.Lock()
 
-# Initialize GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 for p in CONTROL_PINS:
     GPIO.setup(p, GPIO.OUT, initial=GPIO.LOW)
 
+# ---------- Timezone setup ----------
+LOCAL_TZ = pytz.timezone("America/Detroit")
+
+ALERT_URL = "https://backend.agrogodev.workers.dev/raspi/alert"
 
 # ---------- Helper functions ----------
 def activate_pin(pin: int, duration: float):
-    """
-    Activate a GPIO pin (HIGH) for 'duration' seconds, then set LOW.
-    Uses a separate thread so main loop is not blocked by long durations.
-    Multiple activations of the same pin will be serialized by gpio_lock.
-    """
+    """Activate GPIO pin HIGH for 'duration' seconds, then LOW."""
     def _worker():
         try:
             with gpio_lock:
                 log_info(f"[GPIO] Activating pin {pin} HIGH for {duration}s")
                 GPIO.output(pin, GPIO.HIGH)
-            # Sleep outside lock so multiple pins can run concurrently
             time.sleep(duration)
         except Exception as e:
             log_info(f"[GPIO] Error in activation worker: {e}")
@@ -99,33 +92,23 @@ def activate_pin(pin: int, duration: float):
                     log_info(f"[GPIO] Pin {pin} set LOW after {duration}s")
                 except Exception as e:
                     log_info(f"[GPIO] Error setting pin LOW: {e}")
-
-    t = threading.Thread(target=_worker, daemon=True)
-    t.start()
-    return t
+    threading.Thread(target=_worker, daemon=True).start()
 
 
-def should_run_scheduled_action(entry: dict, now: datetime.datetime) -> bool:
-    """
-    Determine if an entry with 'time' should run now.
-    We match by exact minute. Prevent retriggering if already run within same minute.
-    """
+def should_run_scheduled_action(entry, now):
+    """Return True if entry should run this minute based on its time field."""
     when = entry.get("time")
     if not when:
         return False
     try:
-        # Accept "HH:MM" format
         hh_mm = when.strip()
         now_str = now.strftime("%H:%M")
         if hh_mm != now_str:
             return False
-        # Build a unique key for last-run tracking
         entry_key = f"scheduled:{entry.get('type')}:{entry.get('pin')}:{when}"
         last = recent_runs.get(entry_key)
-        # Only run if not run in the current minute
         if last and int(last // 60) == int(now.timestamp() // 60):
             return False
-        # Otherwise allow run
         recent_runs[entry_key] = now.timestamp()
         return True
     except Exception as e:
@@ -133,20 +116,14 @@ def should_run_scheduled_action(entry: dict, now: datetime.datetime) -> bool:
         return False
 
 
-def should_run_sensor_trigger(entry: dict, readings: dict) -> bool:
-    """
-    Evaluate sensor-based triggers like temp_above, humidity_below, etc.
-    Returns True if trigger condition satisfied and not recently triggered.
-    """
+def should_run_sensor_trigger(entry, readings):
+    """Evaluate sensor-based triggers like temp_above, humidity_below, etc."""
     trig = entry.get("trigger")
-    if not trig:
-        return False
     value = entry.get("value")
-    if value is None:
+    if not trig or value is None:
         return False
 
-    # Read values from readings dict
-    temp = readings.get("temp")
+    temp = readings.get("temperature")
     humidity = readings.get("humidity")
 
     condition = False
@@ -158,46 +135,34 @@ def should_run_sensor_trigger(entry: dict, readings: dict) -> bool:
         condition = humidity > value
     elif trig == "humidity_below" and humidity is not None:
         condition = humidity < value
-
     if not condition:
         return False
 
-    # Rate-limit repeated triggers for this entry (use key based on type+pin+trigger)
     entry_key = f"sensor:{entry.get('type')}:{entry.get('pin')}:{trig}:{value}"
-    last = recent_runs.get(entry_key)
     now_ts = time.time()
-    # If last run within 'cooldown' seconds -> skip. Use duration or default 60s
     cooldown = entry.get("cooldown", max(60, entry.get("duration", 60)))
+    last = recent_runs.get(entry_key)
     if last and (now_ts - last) < cooldown:
         return False
     recent_runs[entry_key] = now_ts
     return True
 
-def read_dht11() -> dict:
-    """
-    Read DHT11 sensor via Adafruit Blinka interface.
-    Logs results and errors using log_info().
-    Returns dict: {"temperature": float, "humidity": float} or {} on failure.
-    """
+
+def read_dht11():
+    """Read DHT11 sensor safely and return dict of readings."""
     try:
         temperature_c = dht_device.temperature
         humidity = dht_device.humidity
-
         if temperature_c is None or humidity is None:
-            log_info("[sensor] DHT11 returned None values (sensor may be initializing).")
+            log_info("[sensor] DHT11 returned None values.")
             return {}
-
         log_info(f"[sensor] DHT11 reading: Temp={temperature_c:.1f}°C  Humidity={humidity:.1f}%")
-        return {"temperature": float(temperature_c), "humidity": float(humidity)}
-
+        return {"temperature": temperature_c, "humidity": humidity}
     except RuntimeError as e:
-        # DHT11 throws RuntimeError often due to timing — just log and retry
         log_info(f"[sensor] RuntimeError during read: {e}")
-        time.sleep(2)  # small pause before next loop
+        time.sleep(2)
         return {}
-
     except Exception as e:
-        # Catch all other issues
         log_info(f"[sensor] Unexpected exception: {e}")
         try:
             dht_device.exit()
@@ -205,115 +170,130 @@ def read_dht11() -> dict:
             pass
         time.sleep(2)
         return {}
+def fetch_remote_config(config_url: str) -> dict:
+    log_info(f"[main] Fetching config from {config_url}")
+    return http_get_json(config_url, timeout=10)
 
+def compare_pin_tables(old_table, new_table) -> bool:
+    try:
+        log_info(f"[compare] Old pinActionTable: {old_table}")
+        log_info(f"[compare] New pinActionTable: {new_table}")
+        old_arr = np.array(old_table, dtype=object)
+        new_arr = np.array(new_table, dtype=object)
+        if old_arr.shape != new_arr.shape:
+            return True
+        return not np.array_equal(old_arr, new_arr)
+    except Exception as e:
+        log_info(f"[compare] Error comparing pin tables: {e}")
+        return True
 
-# ---------- Main runtime ----------
+def notify_backend_change(firebase_uid: str):
+    payload = {
+        "userId": firebase_uid,
+        "message": "Device config updated successfully.",
+        "severity": "blue",
+    }
+    try:
+        http_post_json(ALERT_URL, payload)
+        log_info("[notify] Sent config update message.")
+    except Exception as e:
+        log_info(f"[notify] Failed to send update: {e}")
+
+# ---------- Main ----------
 def main():
     log_info("[main] Starting main runtime")
     cfg = load_local_config()
 
-    # Ensure deviceId set to MAC
-    device_id = cfg.get("deviceId") or get_mac()
-    cfg["deviceId"] = device_id
+    mac = cfg.get("mac") or get_mac()
+    cfg["mac"] = mac
 
-    # Backend endpoints from config (templates)
     backend_cfg = cfg.get("backend", {})
     config_url_template = backend_cfg.get(
-        "config_url_template", "https://backend.agrogodev.workers.dev/api/raspi/{mac}"
+        "config_url_template",
+        "https://backend.agrogodev.workers.dev/raspi/{mac}/pinActionTable"
     )
     upload_url_template = backend_cfg.get(
-        "upload_url_template", "https://backend.agrogodev.workers.dev/api/raspi/sensorReadings"
+        "upload_url_template",
+        "https://backend.agrogodev.workers.dev/raspi/{mac}/sensorReadings"
     )
-    ## honestly I dont know if this will work but if we can its no biggie we can do
-    ## something more manual
-    # Basic headers: if firebaseUid present you can later exchange for ID token
-    headers = {}
-    if cfg.get("firebaseUid"):
-        # For now we include firebaseUid as Authorization placeholder; swap for real token if available
-        headers["Authorization"] = f"Bearer {cfg.get('firebaseUid')}"
 
-    # Fetch config (and re-fetch periodically)
     def fetch_and_store_config():
         try:
-            config_url = config_url_template.format(mac=device_id)
-            log_info(f"[main] Fetching config from {config_url}")
-            j = http_get_json(config_url, headers=headers, timeout=10)
-            # Merge into local config and persist
-            cfg.update(j)
-            cfg["last_config_fetch"] = time.time()
-            save_local_config(cfg)
-            log_info("[main] Config fetched and saved locally.")
-            return True
+            config_url = config_url_template.format(mac=mac)
+            remote_cfg = fetch_remote_config(config_url)
+            old_pin_table = cfg.get("pinActionTable", [])
+            new_pin_table = remote_cfg.get("data", [])
+            changed = compare_pin_tables(old_pin_table, new_pin_table)
+
+            if changed:
+                log_info("[main] Detected changes in pinActionTable. Updating local config.")
+                cfg["pinActionTable"] = new_pin_table
+                cfg["last_config_fetch"] = time.time()
+                save_local_config(cfg)
+                firebase_uid = cfg.get("firebaseUUID") or cfg.get("firebaseUid")
+                if firebase_uid:
+                    notify_backend_change(firebase_uid)
+                else:
+                    log_info("[main] No Firebase UID found, skipping notification.")
+            else:
+                log_info("[main] No change detected in pinActionTable.")
+                return True
         except Exception as e:
             log_info(f"[main] Error fetching config: {e}")
-            return False
-
+        return False
+   
     # Initial fetch
     fetch_and_store_config()
 
-    # Polling and action loop
-    sampling_interval = int(cfg.get("samplingInterval", 900))
-    config_refetch_interval = int(cfg.get("configRefetchInterval", 600))  # seconds
-
+    sampling_interval = int(cfg.get("samplingInterval", 30))
+    config_refetch_interval = int(cfg.get("configRefetchInterval", 30))
     last_config_refetch = time.time()
 
     try:
         while True:
             loop_start = time.time()
-            now = datetime.datetime.now()
+            now = datetime.datetime.now(datetime.timezone.utc).astimezone(LOCAL_TZ)
 
-            # Re-fetch config periodically
             if (time.time() - last_config_refetch) > config_refetch_interval:
-                fetch_and_store_config()
+                log_info("[main] Checking for backend config updates...")
+                if fetch_and_store_config():
+                    cfg = load_local_config()
                 last_config_refetch = time.time()
-                # reload pinActionTable from persisted cfg
-                pin_table = cfg.get("pinActionTable", [])
-            else:
-                pin_table = cfg.get("pinActionTable", [])
-
-            # Read sensor values
+              
+            pin_table = cfg.get("pinActionTable", [])
             readings = read_dht11()
             if readings:
                 log_info(f"[main] Sensor readings: {readings}")
             else:
                 log_info("[main] No sensor readings this loop.")
-
-            # Evaluate scheduled actions (time-based)
             for entry in pin_table:
-                try:
-                    # Scheduled actions
-                    if should_run_scheduled_action(entry, now):
-                        pin = int(entry.get("pin"))
-                        duration = int(entry.get("duration", 60))
-                        activate_pin(pin, duration)
-                        log_info(f"[sched] Scheduled action triggered for pin {pin} duration={duration}")
+                    try:
+                        if should_run_scheduled_action(entry, now):
+                            pin = int(entry.get("pin"))
+                            duration = int(entry.get("duration", 30))
+                            activate_pin(pin, duration)
+                            log_info(f"[sched] Scheduled action triggered for pin {pin} duration={duration}")
 
-                    # Sensor-based triggers
-                    if readings and should_run_sensor_trigger(entry, readings):
-                        pin = int(entry.get("pin"))
-                        duration = int(entry.get("duration", 60))
-                        activate_pin(pin, duration)
-                        log_info(f"[sensor-trigger] Triggered pin {pin} due to sensor rule: {entry.get('trigger')}")
-
-                except Exception as e:
-                    log_info(f"[main] Error evaluating entry {entry}: {e}")
-                    log_info(traceback.format_exc())
-
-            # Upload telemetry if uploadUrl present
-            upload_url = cfg.get("uploadUrl") or upload_url_template.format(mac=device_id)
-            if readings and upload_url:
-                payload = {
-                    "deviceId": device_id,
-                    "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                    "readings": readings,
-                }
-                try:
-                    http_post_json(upload_url, payload, headers=headers, timeout=10)
+                        if readings and should_run_sensor_trigger(entry, readings):
+                            pin = int(entry.get("pin"))
+                            duration = int(entry.get("duration", 30))
+                            activate_pin(pin, duration)
+                            log_info(f"[sensor-trigger] Triggered pin {pin} due to sensor rule: {entry.get('trigger')}")
+                    except Exception as e:
+                        log_info(f"[main] Error evaluating entry {entry}: {e}")
+                        log_info(traceback.format_exc())
+                
+                # Upload telemetry
+            upload_url = upload_url_template.format(mac=mac)
+            try:
+                if readings:
+                    upload_url = upload_url_template.format(mac=mac)
+                    payload = {"reading": str(readings)}
+                    http_post_json(upload_url, payload, timeout=10)
                     log_info(f"[upload] Telemetry uploaded to {upload_url}")
-                except Exception as e:
-                    log_info(f"[upload] Failed to upload telemetry: {e}")
-
-            # Sleep until next sampling interval (account for loop time)
+            except Exception as e:
+                log_info(f"[upload] Failed to upload telemetry: {e}")
+                            
             elapsed = time.time() - loop_start
             sleep_for = max(1, sampling_interval - int(elapsed))
             time.sleep(sleep_for)
@@ -324,12 +304,8 @@ def main():
         log_info(f"[main] Unhandled exception: {e}")
         log_info(traceback.format_exc())
     finally:
-        try:
-            GPIO.cleanup()
-        except Exception:
-            pass
+        GPIO.cleanup()
         log_info("[main] Shutdown complete.")
-
 
 if __name__ == "__main__":
     main()

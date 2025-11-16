@@ -6,34 +6,57 @@ startup.py
 - Keeps things simple: uses subprocess.run to execute child scripts
   so logs appear in stdout/stderr (captured by systemd -> logs/app.log).
 """
-
-import subprocess
+import os
 import sys
-from utils import load_local_config, is_paired, get_mac
+import subprocess
+import time
+import pytz
+from utils import load_local_config, save_local_config, get_mac, log_info
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 PAIRING_SCRIPT = os.path.join(APP_DIR, "pairing.py")
 MAIN_SCRIPT = os.path.join(APP_DIR, "main.py")
 
+
 def main():
-    # Ensure config exists and has deviceId set (MAC-based)
-    config = load_local_config()  # this will create config.json if missing
-    # Ensure the config has deviceId populated with MAC address
-    if not config.get("deviceId"):
+    log_info("[startup] Starting device startup process...")
+    
+    #Ensure config exists and load it
+    config = load_local_config()
+
+    #Ensure MAC address is saved in config as 'mac'
+    mac = config.get("mac")
+    if not mac:
         mac = get_mac()
         if mac:
-            config["deviceId"] = mac
-            # save deviceId back to persistent config
-            from utils import save_local_config
+            config["mac"] = mac
             save_local_config(config)
+            log_info(f"[startup] Saved device MAC address: {mac}")
+        else:
+            log_info("[startup] ERROR: Could not determine MAC address.")
+            return
 
-    if not is_paired(config):
-        print("[startup] Device not paired. Launching pairing script.")
-        # Run pairing (blocking). pairing.py will save pairing info when done.
-        subprocess.run([sys.executable, PAIRING_SCRIPT])
-    else:
-        print("[startup] Device paired. Launching main application.")
+    #Check pairing state
+    paired = config.get("paired", False)
+    if not paired:
+        log_info("[startup] Device not paired. Starting pairing process...")
+        result = subprocess.run([sys.executable, PAIRING_SCRIPT])
+
+        if result.returncode != 0:
+            log_info("[startup] Pairing script exited with an error.")
+            return
+
+        # Reload config after pairing attempt
+        config = load_local_config()
+        paired = config.get("paired", False)
+
+    #If paired, launch main.py
+    if paired:
+        log_info("[startup] Device is paired. Launching main.py...")
+        time.sleep(2)  # optional short delay
         subprocess.run([sys.executable, MAIN_SCRIPT])
+    else:
+        log_info("[startup] Pairing not completed. Exiting.")
 
 
 if __name__ == "__main__":

@@ -17,20 +17,18 @@ import requests
 from utils import get_mac, load_local_config, save_local_config, log_info
 
 # Backend pairing status endpoint
-PAIRING_STATUS_URL = "https://backend.agrogodev.workers.dev/api/raspi/pairingStatus"
+PAIRING_STATUS_URL_TEMPLATE = "https://backend.agrogodev.workers.dev/raspi/{mac}/pairingStatus"
 
 # Poll interval (seconds)
 POLL_INTERVAL = 8
 
 
-def generate_nonce():
-    return secrets.token_urlsafe(16)
-
+#def generate_nonce():
+    #return secrets.token_urlsafe(16)
 
 def build_pairing_url(mac: str) -> str:
     # Pairing web app will accept mac and nonce and present Firebase login UI.
-    return f"https://agrogo-wsu.github.io/device-pairing?mac={mac}" #&nonce={nonce}"
-
+    return f"https://agrogo-wsu.github.io/device-pairing?mac={mac}" #&nonce={nonce}
 
 def show_qr_terminal(url: str) -> None:
     # Use qrcode to create ASCII QR
@@ -47,13 +45,13 @@ def wait_for_pairing(mac: str):
     Response example: { "firebaseUid": "firebase|abc123", "message": "paired" }
     """
     log_info(f"[pairing] Polling pairing status for MAC={mac}")
-    url = PAIRING_STATUS_URL
+    url = PAIRING_STATUS_URL_TEMPLATE.format(mac=mac)
     while True:
         try:
-            resp = requests.get(url, params={"mac": mac,}, timeout=10)
+            resp = requests.get(url, timeout=10)
             if resp.status_code == 200:
                 j = resp.json()
-                firebase_uid = j.get("firebaseUid") or j.get("firebase_uid")
+                firebase_uid = j.get("firebaseUUID") or j.get("firebaseUid") or j.get("user")
                 if firebase_uid:
                     log_info(f"[pairing] Pairing confirmed by backend. firebaseUid={firebase_uid}")
                     return firebase_uid
